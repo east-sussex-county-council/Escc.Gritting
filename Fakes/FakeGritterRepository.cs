@@ -5,7 +5,7 @@ namespace Escc.Gritting.Fakes
     /// <summary>
     /// A service to store and retrieve fake test data about gritters
     /// </summary>
-    public class FakeRepository : IGritterDataRepository
+    public class FakeGritterRepository : IGritterDataRepository
     {
         /// <summary>
         /// Reads data about all gritters including their current position

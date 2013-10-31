@@ -4,7 +4,7 @@ namespace Escc.Gritting.SqlServer
     /// <summary>
     /// A service to store and retrieve data about gritters using Microsoft SQL Server
     /// </summary>
-    public class SqlServerRepository : IGritterDataRepository
+    public class SqlServerGritterRepository : IGritterDataRepository
     {
         /// <summary>
         /// Reads data about all gritters including their current position

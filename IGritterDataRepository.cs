@@ -6,7 +6,7 @@ namespace Escc.Gritting
     /// <summary>
     /// A service to store and retrieve data about gritters
     /// </summary>
-    interface IGritterDataRepository
+    public interface IGritterDataRepository
     {
         /// <summary>
         /// Reads data about all gritters including their current position
