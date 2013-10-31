@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Escc.Gritting.Fakes
 {
@@ -14,29 +15,29 @@ namespace Escc.Gritting.Fakes
         public ICollection<Gritter> ReadAllGritters()
         {
             var gritters = new List<Gritter>();
-
+            var random = new Random();
             gritters.Add(new Gritter()
                 {
                     GritterId = "1",
                     GritterName = "Snowy Joey",
-                    Latitude = 50.76675,
-                    Longitude = 0.156443
+                    Latitude = Double.Parse("50." + random.Next(850000, 999999)),
+                    Longitude = Double.Parse("0." + random.Next(0, 750000))
                 });
 
             gritters.Add(new Gritter()
                 {
                     GritterId = "2",
                     GritterName = "Gritney Spears",
-                    Latitude = 50.95674,
-                    Longitude = 0.256442
+                    Latitude = Double.Parse("50." + random.Next(850000, 999999)),
+                    Longitude = Double.Parse("0." + random.Next(0, 750000))
                 });
 
             gritters.Add(new Gritter()
                 {
                     GritterId = "3",
                     GritterName = "Harry Pothole",
-                    Latitude = 50.96674,
-                    Longitude = 0.545443
+                    Latitude = Double.Parse("50." + random.Next(850000, 999999)),
+                    Longitude = Double.Parse("0." + random.Next(0, 750000))
                 });
 
             return gritters;

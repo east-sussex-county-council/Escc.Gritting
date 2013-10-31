@@ -1,4 +1,10 @@
 ﻿
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Data;
+using Microsoft.ApplicationBlocks.Data;
+
 namespace Escc.Gritting.SqlServer
 {
     /// <summary>
@@ -12,7 +18,21 @@ namespace Escc.Gritting.SqlServer
         /// <returns></returns>
         public System.Collections.Generic.ICollection<Gritter> ReadAllGritters()
         {
-            throw new System.NotImplementedException();
+            var gritters = new List<Gritter>();
+            using (var reader = SqlHelper.ExecuteReader(ConfigurationManager.ConnectionStrings["GrittingReader"].ConnectionString, CommandType.StoredProcedure, "usp_Gritter_SelectAll"))
+            {
+                while (reader.Read())
+                {
+                    gritters.Add(new Gritter()
+                        {
+                            GritterId = reader["GritterId"].ToString(),
+                            GritterName = reader["GritterName"].ToString(),
+                            Latitude = Double.Parse(reader["Latitude"].ToString()),
+                            Longitude = Double.Parse(reader["Longitude"].ToString())
+                        });
+                }
+            }
+            return gritters;
         }
     }
 }
