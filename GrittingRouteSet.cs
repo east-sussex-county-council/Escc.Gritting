@@ -37,7 +37,7 @@ namespace Escc.Gritting
             {
                 if (String.IsNullOrEmpty(domainName))
                 {
-                    var pos = RouteSetName.IndexOf(" - ");
+                    var pos = RouteSetName.IndexOf(" - ", StringComparison.Ordinal);
                     if (pos > -1) domainName = RouteSetName.Substring(0, pos);
                 }
                 return domainName;

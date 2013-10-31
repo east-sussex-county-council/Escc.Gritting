@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.Globalization;
 using Microsoft.ApplicationBlocks.Data;
 
 namespace Escc.Gritting.SqlServer
@@ -28,8 +29,8 @@ namespace Escc.Gritting.SqlServer
                         {
                             GritterId = reader["GritterId"].ToString(),
                             GritterName = reader["GritterName"].ToString(),
-                            Latitude = Double.Parse(reader["Latitude"].ToString()),
-                            Longitude = Double.Parse(reader["Longitude"].ToString())
+                            Latitude = Double.Parse(reader["Latitude"].ToString(), CultureInfo.InvariantCulture),
+                            Longitude = Double.Parse(reader["Longitude"].ToString(), CultureInfo.InvariantCulture)
                         });
                 }
             }

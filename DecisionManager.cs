@@ -21,10 +21,10 @@ namespace Escc.Gritting
         /// <summary>
         /// Method for reading a decision file and saving it to a database
         /// </summary>
-        /// <param name="filename">Path to decision file</param>
+        /// <param name="fileName">Path to decision file</param>
         /// <param name="log">log4Net logger</param>
         /// <returns><c>true</c> if file found and parsed, <c>false</c> otherwise</returns>
-        public delegate void DecisionFileReader(string filename, ILog log);
+        public delegate void DecisionFileReader(string fileName, ILog log);
 
         /// <summary>
         /// Reads and processes any decision files in the configured folder
@@ -33,6 +33,9 @@ namespace Escc.Gritting
         /// <param name="log"></param>
         public static void ReadDecisionFile(DecisionManager.DecisionFileReader fileReaderStrategy, ILog log)
         {
+            if (fileReaderStrategy == null) throw new ArgumentNullException("fileReaderStrategy");
+            if (log == null) throw new ArgumentNullException("log");
+
             try
             {
                 // Get folder and file pattern from web.config so they're easy to update
@@ -96,6 +99,8 @@ namespace Escc.Gritting
         /// <param name="decisionText">The original route decision text from the supplier's system, if any.</param>
         public static void SaveRouteDecision(RouteDecision decision, string decisionText)
         {
+            if (decision == null) throw new ArgumentNullException("decision");
+
             var parameters = new SqlParameter[]
             {
                 new SqlParameter("@decisionText", decisionText),
@@ -143,7 +148,7 @@ namespace Escc.Gritting
             {
                 SqlHelper.ExecuteNonQuery(conn, CommandType.StoredProcedure, "usp_RouteSetDecision_Save", parameters);
 
-                var decisionId = Int32.Parse(output.Value.ToString());
+                var decisionId = Int32.Parse(output.Value.ToString(), CultureInfo.InvariantCulture);
                 foreach (RouteDecision route in decision.RouteDecisions)
                 {
                     SqlHelper.ExecuteNonQuery(conn, CommandType.StoredProcedure, "usp_RouteSetDecision_LinkToRouteDecision",
