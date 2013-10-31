@@ -64,6 +64,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Fakes\FakeRepository.cs" />
+    <Compile Include="Gritter.cs" />
+    <Compile Include="IGritterDataRepository.cs" />
     <Compile Include="RouteSetDecision.cs" />
     <Compile Include="GrittingRouteSet.cs" />
     <Compile Include="GrittingRoute.cs" />
@@ -77,12 +80,20 @@
     <Compile Include="GrittingDecision.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RouteDecision.cs" />
+    <Compile Include="SqlServer\SqlServerRepository.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="LICENSE.md" />
+    <None Include="README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include=".gitignore" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
