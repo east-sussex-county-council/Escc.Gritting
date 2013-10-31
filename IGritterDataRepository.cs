@@ -13,5 +13,11 @@ namespace Escc.Gritting
         /// </summary>
         /// <returns></returns>
         ICollection<Gritter> ReadAllGritters();
+
+        /// <summary>
+        /// Adds or updates data about a gritter
+        /// </summary>
+        /// <param name="gritter">The gritter.</param>
+        void SaveGritter(Gritter gritter);
     }
 }

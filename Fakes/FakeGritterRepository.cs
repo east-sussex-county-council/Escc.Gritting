@@ -42,5 +42,14 @@ namespace Escc.Gritting.Fakes
 
             return gritters;
         }
+
+        /// <summary>
+        /// Adds or updates data about a gritter
+        /// </summary>
+        /// <param name="gritter">The gritter.</param>
+        public void SaveGritter(Gritter gritter)
+        {
+            // do nothing
+        }
     }
 }

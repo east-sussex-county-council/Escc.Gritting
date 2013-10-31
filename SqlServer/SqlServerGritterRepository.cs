@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.Data.SqlClient;
 using Microsoft.ApplicationBlocks.Data;
 
 namespace Escc.Gritting.SqlServer
@@ -33,6 +34,22 @@ namespace Escc.Gritting.SqlServer
                 }
             }
             return gritters;
+        }
+
+        /// <summary>
+        /// Adds or updates data about a gritter
+        /// </summary>
+        /// <param name="gritter">The gritter.</param>
+        public void SaveGritter(Gritter gritter)
+        {
+            if (gritter == null) throw new ArgumentNullException("gritter");
+
+            var id = new SqlParameter("@gritterId", gritter.GritterId);
+            var name = new SqlParameter("@gritterName", gritter.GritterName);
+            var latitude = new SqlParameter("@latitude", gritter.Latitude);
+            var longitude = new SqlParameter("@longitude", gritter.Longitude);
+
+            SqlHelper.ExecuteNonQuery(ConfigurationManager.ConnectionStrings["GrittingWriter"].ConnectionString, CommandType.StoredProcedure, "usp_Gritter_Save", id, name, latitude, longitude);
         }
     }
 }
