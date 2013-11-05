@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Configuration;
-using System.Data.SqlClient;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Security;
-using System.Security.Permissions;
 using System.Resources;
+using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
@@ -42,9 +38,4 @@ using System.Resources;
 
 // Allow permission to execute and be called from locked-down environments, and nothing else
 [assembly: CLSCompliant(true)]
-[assembly: AllowPartiallyTrustedCallers]
-[assembly: ConfigurationPermission(SecurityAction.RequestOptional, Unrestricted = true)] // access to web.config
-[assembly: SqlClientPermission(SecurityAction.RequestMinimum, Unrestricted = true)] // access to SQL server
-[assembly: SecurityPermission(SecurityAction.RequestMinimum, Execution = true)] // permission to execute
-[assembly: PermissionSet(SecurityAction.RequestOptional, Name = "Nothing")]
 [assembly: NeutralResourcesLanguageAttribute("en-GB")]
