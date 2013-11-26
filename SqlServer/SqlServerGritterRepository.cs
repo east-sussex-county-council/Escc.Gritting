@@ -30,7 +30,8 @@ namespace Escc.Gritting.SqlServer
                             GritterId = reader["GritterId"].ToString(),
                             GritterName = reader["GritterName"].ToString(),
                             Latitude = Double.Parse(reader["Latitude"].ToString(), CultureInfo.InvariantCulture),
-                            Longitude = Double.Parse(reader["Longitude"].ToString(), CultureInfo.InvariantCulture)
+                            Longitude = Double.Parse(reader["Longitude"].ToString(), CultureInfo.InvariantCulture),
+                            Status = (GritterStatus)Enum.Parse(typeof(GritterStatus), reader["Status"].ToString())
                         });
                 }
             }
@@ -49,8 +50,9 @@ namespace Escc.Gritting.SqlServer
             var name = new SqlParameter("@gritterName", gritter.GritterName);
             var latitude = new SqlParameter("@latitude", gritter.Latitude);
             var longitude = new SqlParameter("@longitude", gritter.Longitude);
+            var status = new SqlParameter("@status", (int) gritter.Status);
 
-            SqlHelper.ExecuteNonQuery(ConfigurationManager.ConnectionStrings["GrittingWriter"].ConnectionString, CommandType.StoredProcedure, "usp_Gritter_Save", id, name, latitude, longitude);
+            SqlHelper.ExecuteNonQuery(ConfigurationManager.ConnectionStrings["GrittingWriter"].ConnectionString, CommandType.StoredProcedure, "usp_Gritter_Save", id, name, latitude, longitude, status);
         }
     }
 }

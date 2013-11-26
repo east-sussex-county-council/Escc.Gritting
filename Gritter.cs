@@ -25,5 +25,10 @@ namespace Escc.Gritting
         /// The longitude of the gritter's current position
         /// </summary>
         public double Longitude { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the gritter is stopped or moving
+        /// </summary>
+        public GritterStatus Status { get; set; }
     }
 }

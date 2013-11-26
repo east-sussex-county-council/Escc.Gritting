@@ -64,6 +64,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GritterStatus.cs" />
     <Compile Include="IGritterDataSource.cs" />
     <Compile Include="Fakes\FakeGritterRepository.cs" />
     <Compile Include="Gritter.cs" />
