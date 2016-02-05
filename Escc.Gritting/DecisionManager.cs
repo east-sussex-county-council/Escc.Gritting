@@ -5,10 +5,9 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Globalization;
 using System.IO;
+using Dapper;
+using Exceptionless;
 using log4net;
-using Microsoft.ApplicationBlocks.Data;
-using Microsoft.ApplicationBlocks.ExceptionManagement;
-
 namespace Escc.Gritting
 {
     /// <summary>
@@ -82,7 +81,7 @@ namespace Escc.Gritting
                 Console.WriteLine(ex.Message);
                 log.Error(ex.Message, ex);
 
-                ExceptionManager.Publish(ex);
+                ex.ToExceptionless().Submit();
 
                 return;
             }
@@ -101,22 +100,20 @@ namespace Escc.Gritting
         {
             if (decision == null) throw new ArgumentNullException("decision");
 
-            var parameters = new SqlParameter[]
-            {
-                new SqlParameter("@decisionText", decisionText),
-                new SqlParameter("@supplierDecisionId", decision.SupplierDecisionId),
-                new SqlParameter("@messageType", decision.MessageType),
-                new SqlParameter("@routeName", decision.Route.RouteName),
-                new SqlParameter("@actionOriginal", decision.OriginalAction),
-                new SqlParameter("@actionWeb", decision.Action),
-                new SqlParameter("@decisionTime", decision.DecisionTime),
-                new SqlParameter("@actionTime", decision.ActionTime),
-                new SqlParameter("@notes", decision.Notes)
-            };
+            var parameters = new DynamicParameters();
+            parameters.Add("@decisionText", decisionText);
+            parameters.Add("@supplierDecisionId", decision.SupplierDecisionId);
+            parameters.Add("@messageType", decision.MessageType);
+            parameters.Add("@routeName", decision.Route.RouteName);
+            parameters.Add("@actionOriginal", decision.OriginalAction);
+            parameters.Add("@actionWeb", decision.Action);
+            parameters.Add("@decisionTime", decision.DecisionTime);
+            parameters.Add("@actionTime", decision.ActionTime);
+            parameters.Add("@notes", decision.Notes);
 
             using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["GrittingDecisionWriter"].ConnectionString))
             {
-                SqlHelper.ExecuteNonQuery(conn, CommandType.StoredProcedure, "usp_RouteDecision_Save", parameters);
+                conn.Execute("usp_RouteDecision_Save", parameters, commandType: CommandType.StoredProcedure);
             }
         }
 
@@ -127,32 +124,29 @@ namespace Escc.Gritting
         /// <param name="decisionText">The original decision text from the supplier's system, if any.</param>
         public static void SaveRouteSetDecision(RouteSetDecision decision, string decisionText)
         {
-            var parameters = new SqlParameter[]
-            {
-                new SqlParameter("@decisionText", decisionText),
-                new SqlParameter("@messageType", decision.MessageType),
-                new SqlParameter("@routeSetInternal", decision.RouteSet.RouteSetNameInternal),
-                new SqlParameter("@routeSetWeb", decision.RouteSet.RouteSetName),
-                new SqlParameter("@actionOriginal", decision.OriginalAction),
-                new SqlParameter("@actionWeb", decision.Action),
-                new SqlParameter("@decisionTime", decision.DecisionTime),
-                new SqlParameter("@actionTime", decision.ActionTime),
-                new SqlParameter("@notes", decision.Notes), 
-                new SqlParameter("@routeSetDecisionId", SqlDbType.Int)
-            };
-
-            var output = parameters[parameters.Length - 1];
-            output.Direction = ParameterDirection.Output;
+            var parameters = new DynamicParameters();
+            parameters.Add("@decisionText", decisionText);
+            parameters.Add("@messageType", decision.MessageType);
+            parameters.Add("@routeSetInternal", decision.RouteSet.RouteSetNameInternal);
+            parameters.Add("@routeSetWeb", decision.RouteSet.RouteSetName);
+            parameters.Add("@actionOriginal", decision.OriginalAction);
+            parameters.Add("@actionWeb", decision.Action);
+            parameters.Add("@decisionTime", decision.DecisionTime);
+            parameters.Add("@actionTime", decision.ActionTime);
+            parameters.Add("@notes", decision.Notes);
+            parameters.Add("@routeSetDecisionId", null, DbType.Int32, ParameterDirection.Output);
 
             using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["GrittingDecisionWriter"].ConnectionString))
             {
-                SqlHelper.ExecuteNonQuery(conn, CommandType.StoredProcedure, "usp_RouteSetDecision_Save", parameters);
+                conn.Execute("usp_RouteSetDecision_Save", parameters, commandType: CommandType.StoredProcedure);
 
-                var decisionId = Int32.Parse(output.Value.ToString(), CultureInfo.InvariantCulture);
+                var decisionId = parameters.Get<int>("@routeSetDecisionId");
                 foreach (RouteDecision route in decision.RouteDecisions)
                 {
-                    SqlHelper.ExecuteNonQuery(conn, CommandType.StoredProcedure, "usp_RouteSetDecision_LinkToRouteDecision",
-                        new SqlParameter("@routeSetDecisionId", decisionId), new SqlParameter("@supplierDecisionId", route.SupplierDecisionId));
+                    var routeParameters = new DynamicParameters();
+                    routeParameters.Add("@routeSetDecisionId", decisionId);
+                    routeParameters.Add("@supplierDecisionId", route.SupplierDecisionId);
+                    conn.Execute("usp_RouteSetDecision_LinkToRouteDecision", routeParameters, commandType: CommandType.StoredProcedure);
                 }
             }
         }
@@ -166,7 +160,7 @@ namespace Escc.Gritting
         {
             using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["GrittingDecisionReader"].ConnectionString))
             {
-                var decisionCount = (int)SqlHelper.ExecuteScalar(conn, CommandType.StoredProcedure, "usp_Decision_Exists", new SqlParameter("@decisionText", decisionText));
+                var decisionCount = (int)conn.ExecuteScalar("usp_Decision_Exists", new { decisionText }, commandType: CommandType.StoredProcedure);
                 return (decisionCount > 0);
             }
         }
@@ -185,7 +179,7 @@ namespace Escc.Gritting
 
             using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["GrittingDecisionReader"].ConnectionString))
             {
-                using (var reader = SqlHelper.ExecuteReader(conn, CommandType.StoredProcedure, "usp_RouteSet_SelectAllRoutes"))
+                using (var reader = conn.ExecuteReader("usp_RouteSet_SelectAllRoutes", commandType: CommandType.StoredProcedure))
                 {
                     while (reader.Read())
                     {
@@ -219,7 +213,7 @@ namespace Escc.Gritting
 
             using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["GrittingDecisionReader"].ConnectionString))
             {
-                using (var reader = SqlHelper.ExecuteReader(conn, CommandType.StoredProcedure, "usp_RouteSetDecision_SelectSummary"))
+                using (var reader = conn.ExecuteReader("usp_RouteSetDecision_SelectSummary", commandType: CommandType.StoredProcedure))
                 {
                     while (reader.Read())
                     {
@@ -261,15 +255,29 @@ namespace Escc.Gritting
         {
             var decisions = new List<GrittingDecision>();
 
-            var size = (pageSize == -1) ? new SqlParameter("@pageSize", DBNull.Value) : new SqlParameter("@pageSize", pageSize);
-            var number = (pageNumber == -1) ? new SqlParameter("@pageNumber", DBNull.Value) : new SqlParameter("@pageNumber", pageNumber);
-            var total = new SqlParameter("@totalDecisions", SqlDbType.Int);
-            total.Direction = ParameterDirection.Output;
+            var parameters = new DynamicParameters();
+            if (pageSize == -1)
+            {
+                parameters.Add("@pageSize", null);
+            }
+            else
+            {
+                parameters.Add("@pageSize", pageSize);
+            }
+            if (pageNumber == -1)
+            {
+                parameters.Add("@pageNumber", null);
+            }
+            else
+            {
+                parameters.Add("@pageNumber", pageNumber);
+            }
+            parameters.Add("@totalDecisions", null, DbType.Int32, ParameterDirection.Output);
 
             // Read decisions. Important to include CommandType.StoredProcedure otherwise output parameter always null
             using (var conn = new SqlConnection(ConfigurationManager.ConnectionStrings["GrittingDecisionReader"].ConnectionString))
             {
-                using (var reader = SqlHelper.ExecuteReader(conn, CommandType.StoredProcedure, "usp_RouteSetDecision_Select", size, number, total))
+                using (var reader = conn.ExecuteReader("usp_RouteSetDecision_Select", parameters, commandType: CommandType.StoredProcedure))
                 {
                     while (reader.Read())
                     {
@@ -286,7 +294,7 @@ namespace Escc.Gritting
             }
 
             // Wait until reader closed before getting access to output parameter
-            totalDecisions = Int32.Parse(total.Value.ToString(), CultureInfo.CurrentCulture);
+            totalDecisions =parameters.Get<int>("@totalDecisions");
             return decisions;
         }
 

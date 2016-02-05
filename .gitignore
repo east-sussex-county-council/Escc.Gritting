@@ -30,3 +30,4 @@ _ReSharper*/
 *.config
 *.scc
 [Ss]cripts*/
+packages

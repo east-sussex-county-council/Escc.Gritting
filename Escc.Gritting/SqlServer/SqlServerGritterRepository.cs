@@ -5,7 +5,7 @@ using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.Globalization;
-using Microsoft.ApplicationBlocks.Data;
+using Dapper;
 
 namespace Escc.Gritting.SqlServer
 {
@@ -21,18 +21,21 @@ namespace Escc.Gritting.SqlServer
         public System.Collections.Generic.ICollection<Gritter> ReadAllGritters()
         {
             var gritters = new List<Gritter>();
-            using (var reader = SqlHelper.ExecuteReader(ConfigurationManager.ConnectionStrings["GrittingReader"].ConnectionString, CommandType.StoredProcedure, "usp_Gritter_SelectAll"))
+            using (var connection = new SqlConnection(ConfigurationManager.ConnectionStrings["GrittingReader"].ConnectionString))
             {
-                while (reader.Read())
+                using (var reader = connection.ExecuteReader("usp_Gritter_SelectAll", commandType: CommandType.StoredProcedure))
                 {
-                    gritters.Add(new Gritter()
+                    while (reader.Read())
+                    {
+                        gritters.Add(new Gritter()
                         {
                             GritterId = reader["GritterId"].ToString(),
                             GritterName = reader["GritterName"].ToString(),
                             Latitude = Double.Parse(reader["Latitude"].ToString(), CultureInfo.InvariantCulture),
                             Longitude = Double.Parse(reader["Longitude"].ToString(), CultureInfo.InvariantCulture),
-                            Status = (GritterStatus)Enum.Parse(typeof(GritterStatus), reader["Status"].ToString())
+                            Status = (GritterStatus) Enum.Parse(typeof (GritterStatus), reader["Status"].ToString())
                         });
+                    }
                 }
             }
             return gritters;
@@ -46,13 +49,17 @@ namespace Escc.Gritting.SqlServer
         {
             if (gritter == null) throw new ArgumentNullException("gritter");
 
-            var id = new SqlParameter("@gritterId", gritter.GritterId);
-            var name = new SqlParameter("@gritterName", gritter.GritterName);
-            var latitude = new SqlParameter("@latitude", gritter.Latitude);
-            var longitude = new SqlParameter("@longitude", gritter.Longitude);
-            var status = new SqlParameter("@status", (int) gritter.Status);
+            var parameters = new DynamicParameters();
+            parameters.Add("@gritterId", gritter.GritterId);
+            parameters.Add("@gritterName", gritter.GritterName);
+            parameters.Add("@latitude", gritter.Latitude);
+            parameters.Add("@longitude", gritter.Longitude);
+            parameters.Add("@status", (int) gritter.Status);
 
-            SqlHelper.ExecuteNonQuery(ConfigurationManager.ConnectionStrings["GrittingWriter"].ConnectionString, CommandType.StoredProcedure, "usp_Gritter_Save", id, name, latitude, longitude, status);
+            using (var connection = new SqlConnection(ConfigurationManager.ConnectionStrings["GrittingReader"].ConnectionString))
+            {
+                connection.Execute("usp_Gritter_Save", parameters, commandType: CommandType.StoredProcedure);
+            }
         }
     }
 }
