@@ -56,7 +56,7 @@ namespace Escc.Gritting.SqlServer
             parameters.Add("@longitude", gritter.Longitude);
             parameters.Add("@status", (int) gritter.Status);
 
-            using (var connection = new SqlConnection(ConfigurationManager.ConnectionStrings["GrittingReader"].ConnectionString))
+            using (var connection = new SqlConnection(ConfigurationManager.ConnectionStrings["GrittingWriter"].ConnectionString))
             {
                 connection.Execute("usp_Gritter_Save", parameters, commandType: CommandType.StoredProcedure);
             }
